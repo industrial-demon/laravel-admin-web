@@ -1,0 +1,40 @@
+services:
+  database:
+    image: mysql:8.1
+    ports:
+      - "3307:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+
+  app:
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    container_name: app
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+      - redis
+  mailpit:
+        image: axllent/mailpit
+        container_name: mailpit
+        restart: unless-stopped
+        volumes:
+            - ./data:/data
+        ports:
+            - 8025:8025
+            - 1025:1025
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+volumes:
+  db_data:
